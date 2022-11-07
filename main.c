@@ -27,11 +27,15 @@ int main(void) {
 		printe(EXIT_FAILURE, "Gender can by only F - female or M - male\n");
 	// gender validated
 
-	const uint* PESEL_number = generate_pesel(year, month, day, gender);
+	PESEL_data_s pesel_data;
+	pesel_data.birth_date.year = year;
+	pesel_data.birth_date.month = month;
+	pesel_data.birth_date.day = day;
+	pesel_data.gender = gender;
+	
+	const char* PESEL_number = pesel_to_string(generate_pesel(pesel_data));
 
-	for (int i = 0; i < PESEL_length; i++)
-		printf("%d", PESEL_number[i]);
-	printf("\n");
+	printf("%s\n", PESEL_number);
 
 	// checking pesel
 

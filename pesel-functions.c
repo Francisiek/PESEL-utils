@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <time.h>
 #include <string.h>
-
+#include <stddef.h>
+#include <ctype.h>
 
 const uint const PESEL_wages[PESEL_length - 1] = {1, 3, 7, 9, 1, 3, 7, 9, 1, 3};
 static int (*random_generator)() = rand;
@@ -235,7 +236,7 @@ PESEL_s pesel_from_string(char* pesel_string) {
 		power /= 10;
 	}
 	// ordinals
-	power = 1'000;
+	power = 1000;
 	for (size_t i = 0; i < 4; i++) {
 		pesel_number.ordinals += to_digit(pesel_string[6 + i]) * power;
 		power /= 10;
@@ -270,7 +271,7 @@ const uint pesel_control_nunber(PESEL_s pesel_number) {
 	int sum = 0;
 
 	for (size_t i = 0; i < PESEL_length - 1; i++) {
-		sum += (to_digit(pesel_string) * PESEL_wages[i]) % 10;
+		sum += (to_digit(pesel_string[i]) * PESEL_wages[i]) % 10;
 	}
 
 	return 10 - (sum % 10);
@@ -286,7 +287,7 @@ PESEL_s generate_pesel(PESEL_data_s pesel_data) {
 	pesel_number.month = month_to_pesel(pesel_data.birth_date.year, 
 		pesel_data.birth_date.month);
 	pesel_number.day = pesel_data.birth_date.day;
-	pesel_number.ordinals = generate_random_pesel_ordinals(pesel_data.gender);
+	pesel_number.ordinals = random_pesel_ordinals(pesel_data.gender);
 	pesel_number.control = pesel_control_nunber(pesel_number);
 
 	return pesel_number;

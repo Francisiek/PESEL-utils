@@ -2,6 +2,7 @@
 #define PESEL_HEADER
 
 #include <stdarg.h>
+#include <stddef.h>
 
 enum { PESEL_date_length = 6 };
 enum { PESEL_ordinals_length = 4};
