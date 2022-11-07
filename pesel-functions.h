@@ -46,26 +46,43 @@ int is_leap_year(uint year);
 // if month's day suits do the month
 int check_date(uint year, uint month, uint day);
 
-// Converts normal month number to PESEL, so the one with
-// aditional number indicating century
-uint convert_to_pesel_month(uint year, uint month);
+// Checks date in PESEL number.
+int check_pesel_date(PESEL_s pesel_number);
 
-// Generates 6-digit PESEL date format from year, month and day.
-// Returns pointer to allocated table which musts be freed
-const uint* generate_pesel_date(uint year, uint month, uint day);
+// Checks if 'gender' has valid value.
+int check_gender(Gender_t gender);
+
+// Converts normal month number to PESEL format, so the one with
+// aditional number indicating century
+uint month_to_pesel(uint year, uint month);
+
+// Returns number of years interval to which 'month' belongs.
+size_t month_from_pesel(uint month);
+
+// Fills PESEL_s type with date in PESEL format.
+PESEL_s date_to_pesel(PESEL_bdate_s date);
+
+// Gets normal format date from 'pesel_number' and
+// returns it with PESEL_bdate_s type.
+PESEL_bdate_s date_from_pesel(PESEL_s pesel_number);
+
+// Fills PESEL_bdate_s structure with given date.
+PESEL_bdate_s make_pesel_bdate(uint year, uint month, uint day);
+
+// Returns 'pesel_number' as null-terminated string.
+char* pesel_to_string(PESEL_s pesel_number);
+
+// Converts 'pesel_string' to PESEL_s structure.
+PESEL_s pesel_from_string(char* pesel_string);
 
 // Generates a random 4-digit PESEL ordinal numbers.
-// Returns pointer to allocated table which musts be freed
-const uint* generate_random_pesel_ordinals(Gender_t g);
+const uint random_pesel_ordinals(Gender_t g);
 
-// Computes PESEL's control number.
-const uint pesel_control_nunber(const uint* PESEL_number);
+// Computes PESEL's control number from PESEL_s structure.
+const uint pesel_control_nunber(PESEL_s pesel_number);
 
 // Generates PESEL number with given details and random ordinal nums.
-const uint* generate_pesel(uint year, uint month, uint day, Gender_t gender);
+PESEL_s generate_pesel(PESEL_data_s pesel_data);
 
-// Converts given year and month from PESEL number to normal date by
-// PESEL_data_t struct.
-PESEL_bdate_s convert_pesel_month(uint pesel_year, uint pesel_month);
 
 #endif // PESEL_HEADER
