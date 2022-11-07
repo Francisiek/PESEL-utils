@@ -206,12 +206,12 @@ char* pesel_to_string(PESEL_s pesel_number) {
 
 PESEL_s pesel_from_string(char* pesel_string) {
 	if (strlen(pesel_string) != PESEL_length) {
-		printe("Bad PESEL number length\n");
+		printe(EXIT_FAILURE, "Bad PESEL number length\n");
 	}
 
 	for (size_t i = 0; i < PESEL_length; i++) {
 		if (!isdigit(pesel_string[i])) {
-			printe("Not a digit in PESEL number\n");
+			printe(EXIT_FAILURE, "Not a digit in PESEL number\n");
 		}
 	}
 
@@ -276,21 +276,18 @@ const uint pesel_control_nunber(PESEL_s pesel_number) {
 	return 10 - (sum % 10);
 }
 
-PESEL_s generate_pesel(PESEL_data_s pesel_data); {
+PESEL_s generate_pesel(PESEL_data_s pesel_data) {
 	check_date(pesel_data.birth_date.year, 
 		pesel_data.birth_date.month, pesel_data.birth_date.day);
-	check_gender(gender);
+	check_gender(pesel_data.gender);
 
-	PESEL_s PESEL_number;
-	PESEL_bdate_s birth_day;
-	uint PESEL_ordinals;
-	uint PESEL_control;
+	PESEL_s pesel_number;
+	pesel_number.year = cut_year(pesel_data.birth_date.year);
+	pesel_number.month = month_to_pesel(pesel_data.birth_date.year, 
+		pesel_data.birth_date.month);
+	pesel_number.day = pesel_data.birth_date.day;
+	pesel_number.ordinals = generate_random_pesel_ordinals(pesel_data.gender);
+	pesel_number.control = pesel_control_nunber(pesel_number);
 
-	// Generates full PESEL format date from normal one
-	birth_day = make_pesel_bdate(year, month, day);
-	PESEL_ordinals = generate_random_pesel_ordinals(gender);
-	PESEL_number.year = 
-	PESEL_control = pesel_control_nunber(PESEL_number);
-
-	return PESEL_number;
+	return pesel_number;
 }
