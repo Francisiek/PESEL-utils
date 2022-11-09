@@ -6,6 +6,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <ctype.h>
+#include <math.h>
 
 const uint const PESEL_wages[PESEL_length - 1] = {1, 3, 7, 9, 1, 3, 7, 9, 1, 3};
 static int (*random_generator)() = rand;
@@ -153,33 +154,39 @@ PESEL_s date_to_pesel(PESEL_bdate_s date) {
 
 PESEL_bdate_s date_from_pesel(PESEL_s pesel_number) {
 	PESEL_bdate_s pesel_date;
-	int nyear, nmonth;
-	if (pesel_number.year > MAX_YEAR)
+	if (pesel_number.year > MAX_YEAR) {
 		printe(EXIT_FAILURE, 
 			"Invalid PESEL year %u, can be up to 99\n", pesel_number.year);
+	}
 
-	int fit_months_counter = 0;
+	int month_interval_num = -1;
 	for (int i = 0; i < 5; i++) {
 		if (pesel_number.month > PESEL_MONTH[i] && 
 				pesel_number.month <= PESEL_MONTH[i] + MONTHS) {
-			fit_months_counter++;
+			month_interval_num = i;
 			break;
 		}
 	}
 
-	if (fit_months_counter == 0) {
+	if (month_interval_num == -1) {
 		printe(EXIT_FAILURE, "Invalid PESEL month - %u\n", pesel_number.month);
 	}
-	
-	pesel_date.year = nyear;
-	pesel_date.month = nmonth;
 
-	if (days_in_month[is_leap_year(nyear)][nmonth] < pesel_number.day || 
+	// normal-format year and month of birthday
+	int nyear, nmonth;
+	nyear = PESEL_YEAR[month_interval_num] + pesel_number.year;
+	nmonth = pesel_number.month - PESEL_MONTH[month_interval_num];
+
+	if (pesel_number.day > days_in_month[is_leap_year(nyear)][nmonth - 1] || 
 			pesel_number.day < 1) {
-		printe(EXIT_FAILURE, "Invalid PESEL day - %u it can be up to%u\n", 
-			pesel_number.day, days_in_month[is_leap_year(nyear)][nmonth]);
-	} else
-		pesel_date.day = pesel_number.day; 
+		printe(EXIT_FAILURE, "Day %u is not right for %u month. It should be max %u day\n",
+			pesel_number.day, nmonth, days_in_month[is_leap_year(nyear)][nmonth - 1]);
+	} else {
+		pesel_date.day = pesel_number.day;
+	}
+
+	pesel_date.month = nmonth;
+	pesel_date.year = nyear;
 
 	return pesel_date;
 }
@@ -367,13 +374,13 @@ static void rec_ordinals_even(uint deep) {
 		if (deep < 3) {
 			for (int i = 0; i < 10; i++) {
 				rec_ordinal += i * power;
-				rec_ordinals_gen(deep + 1);
+				rec_ordinals_even(deep + 1);
 				rec_ordinal -= i * power;
 			}
 		} else {
 			for (int i = 0; i < 10; i += 2) {
 				rec_ordinal += i * power;
-				rec_ordinals_gen(deep + 1);
+				rec_ordinals_even(deep + 1);
 				rec_ordinal -= i * power;
 			}
 		}
@@ -389,13 +396,13 @@ static void rec_ordinals_uneven(uint deep) {
 		if (deep < 3) {
 			for (int i = 0; i < 10; i++) {
 				rec_ordinal += i * power;
-				rec_ordinals_gen(deep + 1);
+				rec_ordinals_uneven(deep + 1);
 				rec_ordinal -= i * power;
 			}
 		} else {
 			for (int i = 1; i < 10; i += 2) {
 				rec_ordinal += i * power;
-				rec_ordinals_gen(deep + 1);
+				rec_ordinals_uneven(deep + 1);
 				rec_ordinal -= i * power;
 			}
 		}
