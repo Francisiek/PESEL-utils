@@ -53,6 +53,9 @@ int check_pesel_date(PESEL_s pesel_number);
 // Checks if 'gender' has valid value.
 int check_gender(Gender_t gender);
 
+// Checks if ordinals are 4 digit number and if they match the gender.
+int check_ordinals(uint ordinals, Gender_t gender);
+
 // Converts normal month number to PESEL format, so the one with
 // aditional number indicating century
 uint month_to_pesel(uint year, uint month);
@@ -70,6 +73,9 @@ PESEL_bdate_s date_from_pesel(PESEL_s pesel_number);
 // Fills PESEL_bdate_s structure with given date.
 PESEL_bdate_s make_pesel_bdate(uint year, uint month, uint day);
 
+// Returns random ordinals that match gender 'g'.
+const uint random_pesel_ordinals(Gender_t g);
+
 // Returns 'pesel_number' as null-terminated string.
 char* pesel_to_string(PESEL_s pesel_number);
 
@@ -85,5 +91,13 @@ const uint pesel_control_nunber(PESEL_s pesel_number);
 // Generates PESEL number with given details and random ordinal nums.
 PESEL_s generate_pesel(PESEL_data_s pesel_data);
 
+// Generates PESEL number with given details and given ordinal numbers.
+PESEL_s generate_pesel_with_ordinals(PESEL_data_s pesel_data, uint ordinals);
 
+// Generates all possible PESELs for given data and returns
+// them as table, which must be later unallocated.
+PESEL_s* generate_all_pesels(PESEL_data_s pesel_data);
+
+// Validates 'pesel_number' and return 0 if it is.
+int validate_pesel(PESEL_s pesel_number);
 #endif // PESEL_HEADER

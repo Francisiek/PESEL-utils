@@ -13,8 +13,8 @@ static int (*random_generator_initializer)() = srand;
 
 enum {MONTHS = 12, MAX_YEAR = 99};
 
-static const uint PESEL_MONTH[] = {80, 0, 20, 40, 60};
-static const uint PESEL_YEAR[] = {1800, 1900, 2000, 2100, 2200};
+const uint PESEL_MONTH[] = {80, 0, 20, 40, 60};
+const uint PESEL_YEAR[] = {1800, 1900, 2000, 2100, 2200};
 
 static const unsigned char const days_in_month[2][12] = {
 		{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
@@ -57,7 +57,7 @@ uint to_digit(char c) {
 }
 
 int check_date(uint year, uint month, uint day) {
-	if (year < PESEL_YEAR[0] || year > PESEL_YEAR[5] + MAX_YEAR)
+	if (year < PESEL_YEAR[0] || year > PESEL_YEAR[4] + MAX_YEAR)
 		printe(EXIT_FAILURE, "Year can be only from 1800 to 2299\n");
 	if (month < 1 || month > MONTHS)
 		printe(EXIT_FAILURE, "Month can be only from 1 to 12\n");
@@ -195,11 +195,11 @@ PESEL_bdate_s make_pesel_bdate(uint year, uint month, uint day) {
 
 char* pesel_to_string(PESEL_s pesel_number) {
 	char* apesel = calloc(sizeof(char), PESEL_length + 1);
-	sprintf(&apesel[0], "%u", pesel_number.year);
-	sprintf(&apesel[2], "%u", pesel_number.month);
-	sprintf(&apesel[4], "%u", pesel_number.day);
-	sprintf(&apesel[6], "%u", pesel_number.ordinals);
-	sprintf(&apesel[10], "%u", pesel_number.control);
+	sprintf(&apesel[0], "%02u", pesel_number.year);
+	sprintf(&apesel[2], "%02u", pesel_number.month);
+	sprintf(&apesel[4], "%02u", pesel_number.day);
+	sprintf(&apesel[6], "%04u", pesel_number.ordinals);
+	sprintf(&apesel[10], "%01u", pesel_number.control);
 	sprintf(&apesel[11], "\0");
 
 	return apesel;
@@ -277,6 +277,25 @@ const uint pesel_control_nunber(PESEL_s pesel_number) {
 	return 10 - (sum % 10);
 }
 
+int check_ordinals(uint ordinals, Gender_t gender) {
+	check_gender(gender);
+	if (gender == FEMALE && ordinals % 2 != 0)
+		return 1;
+	else if (gender == MALE && ordinals % 2 != 1)
+		return 1;
+	int digit_counter = 0;
+	while (ordinals > 0) {
+		digit_counter++;
+		ordinals /= 10;
+	}
+
+	if (digit_counter != PESEL_ordinals_length) {
+		return 1;
+	}
+
+	return 0;
+}
+
 PESEL_s generate_pesel(PESEL_data_s pesel_data) {
 	check_date(pesel_data.birth_date.year, 
 		pesel_data.birth_date.month, pesel_data.birth_date.day);
@@ -291,4 +310,116 @@ PESEL_s generate_pesel(PESEL_data_s pesel_data) {
 	pesel_number.control = pesel_control_nunber(pesel_number);
 
 	return pesel_number;
+}
+
+PESEL_s generate_pesel_with_ordinals(PESEL_data_s pesel_data, uint ordinals) {
+	check_date(pesel_data.birth_date.year, 
+		pesel_data.birth_date.month, pesel_data.birth_date.day);
+	check_gender(pesel_data.gender);
+	if (check_ordinals(ordinals, pesel_data.gender))
+		printe(EXIT_FAILURE, "Bad oridinals\n");
+
+	PESEL_s pesel_number;
+	pesel_number.year = cut_year(pesel_data.birth_date.year);
+	pesel_number.month = month_to_pesel(pesel_data.birth_date.year, 
+		pesel_data.birth_date.month);
+	pesel_number.day = pesel_data.birth_date.day;
+	pesel_number.ordinals = ordinals;
+	pesel_number.control = pesel_control_nunber(pesel_number);
+
+	return pesel_number;
+}
+
+int validate_pesel(PESEL_s pesel_number) {
+	check_pesel_date(pesel_number);
+	if (pesel_number.control != pesel_control_nunber(pesel_number)) {
+		printe(EXIT_FAILURE, "Pesel control number isn't good\n");
+	}
+
+	return 0;
+}
+
+enum {ORDINALS_SIZE = 5000};
+static uint ordinals_table[ORDINALS_SIZE];
+static size_t ordinals_table_size = 0;
+
+static int push_ordinals(uint number) {
+	if (ordinals_table_size < ORDINALS_SIZE) {
+		ordinals_table[ordinals_table_size - 1] = number;
+		ordinals_table_size++;
+		return 0;
+	} else
+		return 1;
+}
+
+static int clear_ordinals(void) {
+	ordinals_table_size = 0;
+	return 0;
+}
+
+static uint rec_ordinal = 0;
+static void rec_ordinals_even(uint deep) {
+	if (deep > 3) {
+		push_ordinals(rec_ordinal);
+		return;
+	} else {
+		int power = pow(10, 3 - deep);
+		if (deep < 3) {
+			for (int i = 0; i < 10; i++) {
+				rec_ordinal += i * power;
+				rec_ordinals_gen(deep + 1);
+				rec_ordinal -= i * power;
+			}
+		} else {
+			for (int i = 0; i < 10; i += 2) {
+				rec_ordinal += i * power;
+				rec_ordinals_gen(deep + 1);
+				rec_ordinal -= i * power;
+			}
+		}
+	}
+}
+
+static void rec_ordinals_uneven(uint deep) {
+	if (deep > 3) {
+		push_ordinals(rec_ordinal);
+		return;
+	} else {
+		int power = pow(10, 3 - deep);
+		if (deep < 3) {
+			for (int i = 0; i < 10; i++) {
+				rec_ordinal += i * power;
+				rec_ordinals_gen(deep + 1);
+				rec_ordinal -= i * power;
+			}
+		} else {
+			for (int i = 1; i < 10; i += 2) {
+				rec_ordinal += i * power;
+				rec_ordinals_gen(deep + 1);
+				rec_ordinal -= i * power;
+			}
+		}
+	}
+}
+
+PESEL_s* generate_all_pesels(PESEL_data_s pesel_data) {
+	check_gender(pesel_data.gender);
+	if (pesel_data.gender == FEMALE) {
+		rec_ordinals_even(0);
+	} else {
+		rec_ordinals_uneven(0);
+	}
+
+	PESEL_s* pesels_table = calloc(sizeof(PESEL_s), ORDINALS_SIZE);
+	for (size_t i = 0; i < ORDINALS_SIZE; i++) {
+		pesels_table[i] = 
+			generate_pesel_with_ordinals(pesel_data, ordinals_table[i]);
+	}
+	clear_ordinals();
+
+	return pesels_table;
+}
+
+int is_pesel_in_base(PESEL_s pesel_number) {
+
 }
