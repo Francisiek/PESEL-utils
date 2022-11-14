@@ -3,6 +3,23 @@
 
 #include <stdarg.h>
 #include <stddef.h>
+#include <stdbool.h>
+
+enum PESEL_ERRORS {
+	NOERROR = 0,
+	EALLOC = 5,
+	EYEAR_RANGE,
+	EMONTH_RANGE,
+	EDAY_RANGE,
+	EMONTH_DAY,
+	EGENDER,
+	EORDINALS,
+	ECONTROL,
+	EPESEL_LENGTH,
+	EVAL_PESEL,
+	ENOT_DIGIT,
+	EOVERFLOW,
+};
 
 enum { PESEL_date_length = 6 };
 enum { PESEL_ordinals_length = 4};
@@ -17,6 +34,7 @@ typedef struct PESEL_bdate_s {
 	uint month;
 	uint day;
 } PESEL_bdate_s;
+PESEL_bdate_s default_PESEL_bdate_s = {};
 
 // Structure that holds data that PESEL contains,
 // but in normal format.
@@ -24,6 +42,7 @@ typedef struct PESEL_data_s {
 	PESEL_bdate_s birth_date;
 	Gender_t gender;
 } PESEL_data_s;
+PESEL_data_s default_PESEL_data_s = {};
 
 // Structure that holds raw data from PESEL number.
 typedef struct PESEL_s {
@@ -33,6 +52,7 @@ typedef struct PESEL_s {
 	uint ordinals;
 	uint control;
 } PESEL_s;
+PESEL_s default_PESEL_s = {};
 
 // Wages of first ten PESEL's digits
 extern const uint const PESEL_wages[PESEL_length - 1];
@@ -41,7 +61,7 @@ extern const uint const PESEL_wages[PESEL_length - 1];
 void printe(int exit_code, char* format, ...);
 
 // Checks if a 'year' is leap. Returns 0-false or 1-true
-int is_leap_year(uint year);
+bool is_leap_year(uint year);
 
 // Checks if given date is valid: do year fits in PESEL's year interval,
 // if month's day suits do the month
@@ -54,14 +74,17 @@ int check_pesel_date(PESEL_s pesel_number);
 int check_gender(Gender_t gender);
 
 // Checks if ordinals are 4 digit number and if they match the gender.
-int check_ordinals(uint ordinals, Gender_t gender);
+int check_ordinals_gender(uint ordinals, Gender_t gender);
+
+// Checks if ordinals are 4 digit number.
+int check_ordinals(uint ordinals);
 
 // Converts normal month number to PESEL format, so the one with
 // aditional number indicating century
 uint month_to_pesel(uint year, uint month);
 
-// Returns number of years interval to which 'month' belongs.
-size_t month_from_pesel(uint month);
+// Returns number of years interval to which 'month' belongs or -1 on failure.
+int month_from_pesel(uint month);
 
 // Fills PESEL_s type with date in PESEL format.
 PESEL_s date_to_pesel(PESEL_bdate_s date);
