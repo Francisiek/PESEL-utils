@@ -19,7 +19,10 @@ enum PESEL_ERRORS {
 	EVAL_PESEL,
 	ENOT_DIGIT,
 	EOVERFLOW,
+	EARGUMENT,
 };
+
+extern int pesel_error;
 
 enum { PESEL_date_length = 6 };
 enum { PESEL_ordinals_length = 4};
@@ -63,9 +66,17 @@ void printe(int exit_code, char* format, ...);
 // Checks if a 'year' is leap. Returns 0-false or 1-true
 bool is_leap_year(uint year);
 
+uint cut_year(uint year);
+
+uint to_digit(char c);
+
+int check_pesel_month(uint month);
+
 // Checks if given date is valid: do year fits in PESEL's year interval,
 // if month's day suits do the month
 int check_date(uint year, uint month, uint day);
+
+int check_bdate(PESEL_bdate_s bdate);
 
 // Checks date in PESEL number.
 int check_pesel_date(PESEL_s pesel_number);
@@ -78,6 +89,10 @@ int check_ordinals_gender(uint ordinals, Gender_t gender);
 
 // Checks if ordinals are 4 digit number.
 int check_ordinals(uint ordinals);
+
+int validate_pesel(PESEL_s pesel_number);
+
+int check_pesel_data(PESEL_data_s pesel_data);
 
 // Converts normal month number to PESEL format, so the one with
 // aditional number indicating century
@@ -96,6 +111,10 @@ PESEL_bdate_s date_from_pesel(PESEL_s pesel_number);
 // Fills PESEL_bdate_s structure with given date.
 PESEL_bdate_s make_pesel_bdate(uint year, uint month, uint day);
 
+char* pesel_to_string(PESEL_s pesel_number);
+
+PESEL_s pesel_from_string(char* pesel_string);
+
 // Returns random ordinals that match gender 'g'.
 const uint random_pesel_ordinals(Gender_t g);
 
@@ -109,7 +128,7 @@ PESEL_s pesel_from_string(char* pesel_string);
 const uint random_pesel_ordinals(Gender_t g);
 
 // Computes PESEL's control number from PESEL_s structure.
-const uint pesel_control_nunber(PESEL_s pesel_number);
+const uint pesel_control_number(PESEL_s pesel_number);
 
 // Generates PESEL number with given details and random ordinal nums.
 PESEL_s generate_pesel(PESEL_data_s pesel_data);
@@ -121,6 +140,4 @@ PESEL_s generate_pesel_with_ordinals(PESEL_data_s pesel_data, uint ordinals);
 // them as table, which must be later unallocated.
 PESEL_s* generate_all_pesels(PESEL_data_s pesel_data);
 
-// Validates 'pesel_number' and return 0 if it is.
-int validate_pesel(PESEL_s pesel_number);
 #endif // PESEL_HEADER
