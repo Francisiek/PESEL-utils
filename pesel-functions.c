@@ -27,6 +27,10 @@ static const unsigned char const days_in_month[2][12] = {
 	{31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31}
 };
 
+PESEL_bdate_s default_PESEL_bdate_s = {};
+PESEL_data_s default_PESEL_data_s = {};
+PESEL_s default_PESEL_s = {};
+
 void printe(int exit_code, char* format, ...) {
 	va_list list;
 	va_start(list, format);
@@ -193,7 +197,7 @@ int validate_pesel(PESEL_s pesel_number) {
 	if (e = check_ordinals(pesel_number.ordinals))
 		return e;
 
-	if (pesel_number.control != pesel_control_nunber(pesel_number)) {
+	if (pesel_number.control != pesel_control_number(pesel_number)) {
 		set_pesel_error(ECONTROL);
 		return ECONTROL;
 	}
@@ -396,7 +400,7 @@ PESEL_s generate_pesel(PESEL_data_s pesel_data) {
 		pesel_data.birth_date.month);
 	pesel_number.day = pesel_data.birth_date.day;
 	pesel_number.ordinals = random_pesel_ordinals(pesel_data.gender);
-	pesel_number.control = pesel_control_nunber(pesel_number);
+	pesel_number.control = pesel_control_number(pesel_number);
 
 	return pesel_number;
 }
@@ -414,7 +418,7 @@ PESEL_s generate_pesel_with_ordinals(PESEL_data_s pesel_data, uint ordinals) {
 		pesel_data.birth_date.month);
 	pesel_number.day = pesel_data.birth_date.day;
 	pesel_number.ordinals = ordinals;
-	pesel_number.control = pesel_control_nunber(pesel_number);
+	pesel_number.control = pesel_control_number(pesel_number);
 
 	return pesel_number;
 }

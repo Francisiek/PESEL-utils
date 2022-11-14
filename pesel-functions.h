@@ -37,7 +37,7 @@ typedef struct PESEL_bdate_s {
 	uint month;
 	uint day;
 } PESEL_bdate_s;
-PESEL_bdate_s default_PESEL_bdate_s = {};
+
 
 // Structure that holds data that PESEL contains,
 // but in normal format.
@@ -45,7 +45,7 @@ typedef struct PESEL_data_s {
 	PESEL_bdate_s birth_date;
 	Gender_t gender;
 } PESEL_data_s;
-PESEL_data_s default_PESEL_data_s = {};
+
 
 // Structure that holds raw data from PESEL number.
 typedef struct PESEL_s {
@@ -55,7 +55,6 @@ typedef struct PESEL_s {
 	uint ordinals;
 	uint control;
 } PESEL_s;
-PESEL_s default_PESEL_s = {};
 
 // Wages of first ten PESEL's digits
 extern const uint const PESEL_wages[PESEL_length - 1];
