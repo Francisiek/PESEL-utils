@@ -29,7 +29,7 @@ enum { PESEL_ordinals_length = 4};
 enum { PESEL_length = PESEL_date_length + PESEL_ordinals_length + 1};
 
 typedef unsigned int uint;
-typedef enum Gender { MALE = 'm', FEMALE = 'f' } Gender_t;
+typedef enum Gender_t { MALE = 'm', FEMALE = 'f' } Gender_t;
 
 // Structure that holds birthday date in normal format.
 typedef struct PESEL_bdate_s {
@@ -110,12 +110,11 @@ PESEL_bdate_s date_from_pesel(PESEL_s pesel_number);
 // Fills PESEL_bdate_s structure with given date.
 PESEL_bdate_s make_pesel_bdate(uint year, uint month, uint day);
 
+PESEL_data_s make_pesel_data(PESEL_bdate_s bdate, Gender_t gender);
+
 char* pesel_to_string(PESEL_s pesel_number);
 
 PESEL_s pesel_from_string(char* pesel_string);
-
-// Returns random ordinals that match gender 'g'.
-const uint random_pesel_ordinals(Gender_t g);
 
 // Returns 'pesel_number' as null-terminated string.
 char* pesel_to_string(PESEL_s pesel_number);

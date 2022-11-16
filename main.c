@@ -13,7 +13,8 @@ int main(void) {
 	// generating PESEL
 	printf("Give year, month, and day of birth: ");
 	scanf("%u %u %u", &year, &month, &day);
-	check_date(year, month, day);
+	if (check_date(year, month, day))
+		printe(EXIT_FAILURE, "Wrong date\n");
 	// birth date validated
 	
 	char tmp_gender_char;
@@ -27,17 +28,13 @@ int main(void) {
 		printe(EXIT_FAILURE, "Gender can by only F - female or M - male\n");
 	// gender validated
 
-	PESEL_data_s pesel_data;
-	pesel_data.birth_date.year = year;
-	pesel_data.birth_date.month = month;
-	pesel_data.birth_date.day = day;
-	pesel_data.gender = gender;
-	
-	const char* PESEL_number = pesel_to_string(generate_pesel(pesel_data));
-
-	printf("%s\n", PESEL_number);
-
-	// checking pesel
-
+	PESEL_data_s pdata = make_pesel_data(make_pesel_bdate(year, month, day), gender);
+	PESEL_s pesel_num = generate_pesel(pdata);
+	char* s = pesel_to_string(pesel_num);
+	printf("%s\n", s);
+	PESEL_s pesel2 = pesel_from_string(s);
+	printf("pesel from string %s\n", pesel_to_string(pesel2));
+	printf("pesel validate %d\n", validate_pesel(pesel2));
+	printf("pesel errno %d\n", pesel_error);
 	return EXIT_SUCCESS;
 }

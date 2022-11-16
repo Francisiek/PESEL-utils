@@ -115,6 +115,19 @@ int check_bdate(PESEL_bdate_s bdate) {
 	return check_date(year, month, day);
 }
 
+int check_pesel_data(PESEL_data_s pdata) {
+	int e;
+	if (e = check_bdate(pdata.birth_date)) {
+		return e;
+	}
+
+	if (e = check_gender(pdata.gender)) {
+		return e;
+	}
+
+	return NOERROR;
+}
+
 int check_pesel_date(PESEL_s pesel_number) {
 	if (pesel_number.year > MAX_YEAR) {
 		set_pesel_error(EYEAR_RANGE);
@@ -205,23 +218,13 @@ int validate_pesel(PESEL_s pesel_number) {
 	return NOERROR;
 }
 
-int check_pesel_data(PESEL_data_s pesel_data) {
-	int e;
-	if (e = check_bdate(pesel_data.birth_date))
-		return e;
-	if (e = check_gender(pesel_data.gender))
-		return e;
-	
-	return NOERROR;
-}
-
 uint month_to_pesel(uint year, uint month) {
 	if (check_date(year, month, 1))
 		return 0;
 
 	for (int i = 0; i < 5; i++) {
-		if (year >= PESEL_YEAR[0] && year < PESEL_YEAR[0] + 100) {
-			month += PESEL_MONTH[0];
+		if (year >= PESEL_YEAR[i] && year < PESEL_YEAR[i] + 100) {
+			month += PESEL_MONTH[i];
 			break;
 		}
 	}
@@ -286,6 +289,14 @@ PESEL_bdate_s make_pesel_bdate(uint year, uint month, uint day) {
 	return date;
 }
 
+PESEL_data_s make_pesel_data(PESEL_bdate_s bdate, Gender_t gender) {
+	PESEL_data_s d;
+	d.birth_date = bdate;
+	d.gender = gender;
+
+	return d;
+}
+
 char* pesel_to_string(PESEL_s pesel_number) {
 	char* apesel = calloc(sizeof(char), PESEL_length + 1);
 	if (apesel == NULL) {
@@ -337,7 +348,7 @@ PESEL_s pesel_from_string(char* pesel_string) {
 	// day
 	power = 10;
 	for (size_t i = 0; i < 2; i++) {
-		pesel_number.month += to_digit(pesel_string[4 + i]) * power;
+		pesel_number.day += to_digit(pesel_string[4 + i]) * power;
 		power /= 10;
 	}
 	// ordinals
@@ -357,17 +368,17 @@ const uint random_pesel_ordinals(Gender_t g) {
 		return 0;
 
 	static const char gender_numbers[2][5] = {
-		{1, 3, 5, 7, 9}, {0, 2, 4, 6, 8}
+		{0, 2, 4, 6, 8}, {1, 3, 5, 7, 9}
 	};
-	size_t gindex = (g == MALE) ? 0 : 1;
+	size_t gindex = (g == FEMALE) ? 0 : 1;
 
 	uint ordinals = 0;
-	uint power = 1;
+	uint power = pow(10, 3);
 	init_random_generator();
 
-	for (int i = 0; i < PESEL_ordinals_length - 1; i++) {
+	for (int i = PESEL_ordinals_length - 1; i > 0; i--) {
 		ordinals += (random_uint() % 10) * power;
-		power *= 10;
+		power /= 10;
 	}
 	ordinals += gender_numbers[gindex][random_uint() % 5] * power;
 
