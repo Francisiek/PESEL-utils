@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 enum PESEL_ERRORS {
+	// NOERROR should always be set to zero
 	NOERROR = 0,
 	EALLOC = 5,
 	EYEAR_RANGE,
@@ -27,9 +28,12 @@ extern int pesel_error;
 enum { PESEL_date_length = 6 };
 enum { PESEL_ordinals_length = 4};
 enum { PESEL_length = PESEL_date_length + PESEL_ordinals_length + 1};
+enum { ORDINALS_SIZE = 5000};
 
 typedef unsigned int uint;
-typedef enum Gender_t { MALE = 'm', FEMALE = 'f' } Gender_t;
+// DO NOT CHANGE. Those values indicates
+// result of operation (gender_digit(last ordinals digit) mod 2)
+typedef enum Gender_t { FEMALE = 0, MALE = 1 } Gender_t;
 
 // Structure that holds birthday date in normal format.
 typedef struct PESEL_bdate_s {

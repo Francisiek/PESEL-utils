@@ -36,5 +36,20 @@ int main(void) {
 	printf("pesel from string %s\n", pesel_to_string(pesel2));
 	printf("pesel validate %d\n", validate_pesel(pesel2));
 	printf("pesel errno %d\n", pesel_error);
+
+	PESEL_bdate_s bd = make_pesel_bdate(year, month, day);
+	pesel2 = date_to_pesel(bd);
+	pesel2.ordinals = random_pesel_ordinals(gender);
+	pesel2.control = pesel_control_number(pesel2);
+	printf("pesel2 second validation %d\n", validate_pesel(pesel2));
+	printf("pesel2 %s\n", pesel_to_string(pesel2));
+
+	PESEL_s* ptable = generate_all_pesels(pdata);
+	if (ptable == NULL)
+		printe(EXIT_FAILURE, "error generating all pesels\n");
+
+	for (size_t i = 0; i < ORDINALS_SIZE; i++) {
+		printf("%s val %d\n", pesel_to_string(ptable[i]), validate_pesel(ptable[i]));
+	}
 	return EXIT_SUCCESS;
 }

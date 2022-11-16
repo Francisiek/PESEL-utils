@@ -13,14 +13,15 @@ void set_pesel_error(int code) {
 	pesel_error = code;
 }
 
-const uint const PESEL_wages[PESEL_length - 1] = {1, 3, 7, 9, 1, 3, 7, 9, 1, 3};
 static int (*random_generator)() = rand;
 static int (*random_generator_initializer)() = srand;
 
-enum {MONTHS = 12, MAX_YEAR = 99};
+enum {MONTHS = 12, MAX_YEAR = 99, DINTERVALS = 5};
 
-const uint PESEL_MONTH[] = {80, 0, 20, 40, 60};
-const uint PESEL_YEAR[] = {1800, 1900, 2000, 2100, 2200};
+const uint const PESEL_wages[PESEL_length - 1] = {1, 3, 7, 9, 1, 3, 7, 9, 1, 3};
+
+const uint PESEL_MONTH[DINTERVALS] = {80, 0, 20, 40, 60};
+const uint PESEL_YEAR[DINTERVALS] = {1800, 1900, 2000, 2100, 2200};
 
 static const unsigned char const days_in_month[2][12] = {
 	{31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31},
@@ -68,7 +69,7 @@ uint to_digit(char c) {
 
 int check_pesel_month(uint month) {
 	int month_interval_num = -1;
-	for (size_t i = 0; i < 5; i++) {
+	for (size_t i = 0; i < DINTERVALS; i++) {
 		if (month > PESEL_MONTH[i] && 
 				month <= PESEL_MONTH[i] + MONTHS) {
 			month_interval_num = i;
@@ -85,7 +86,7 @@ int check_pesel_month(uint month) {
 }
 
 int check_date(uint year, uint month, uint day) {
-	if (year < PESEL_YEAR[0] || year > PESEL_YEAR[4] + MAX_YEAR) {
+	if (year < PESEL_YEAR[0] || year > PESEL_YEAR[DINTERVALS - 1] + MAX_YEAR) {
 		set_pesel_error(EYEAR_RANGE);
 		return EYEAR_RANGE;
 	}
@@ -168,34 +169,20 @@ int check_ordinals_gender(uint ordinals, Gender_t gender) {
 	if (e = check_gender(gender))
 		return e;
 
-	if ((gender == FEMALE && ordinals % 2 != 0) ||
-			(gender == MALE && ordinals % 2 != 1)) { 
+	if ((gender == FEMALE && ordinals % 2 != FEMALE) ||
+			(gender == MALE && ordinals % 2 != MALE)) { 
 		set_pesel_error(EORDINALS);
 		return EORDINALS;
 	}
 
-	int digit_counter = 0;
-	while (ordinals > 0) {
-		digit_counter++;
-		ordinals /= 10;
-	}
-
-	if (digit_counter != PESEL_ordinals_length) {
-		set_pesel_error(EORDINALS);
-		return EORDINALS;
-	}
+	if (e = check_ordinals(ordinals))
+		return e;
 
 	return NOERROR;
 }
 
 int check_ordinals(uint ordinals) {
-	int digit_counter = 0;
-	while (ordinals > 0) {
-		digit_counter++;
-		ordinals /= 10;
-	}
-
-	if (digit_counter != PESEL_ordinals_length) {
+	if (ordinals >= 10000) {
 		set_pesel_error(EORDINALS);
 		return EORDINALS;
 	}
@@ -222,8 +209,8 @@ uint month_to_pesel(uint year, uint month) {
 	if (check_date(year, month, 1))
 		return 0;
 
-	for (int i = 0; i < 5; i++) {
-		if (year >= PESEL_YEAR[i] && year < PESEL_YEAR[i] + 100) {
+	for (int i = 0; i < DINTERVALS; i++) {
+		if (year >= PESEL_YEAR[i] && year <= PESEL_YEAR[i] + MAX_YEAR) {
 			month += PESEL_MONTH[i];
 			break;
 		}
@@ -234,7 +221,7 @@ uint month_to_pesel(uint year, uint month) {
 
 int month_from_pesel(uint month) {
 	int month_interval_num = -1;
-	for (size_t i = 0; i < 5; i++) {
+	for (size_t i = 0; i < DINTERVALS; i++) {
 		if (month > PESEL_MONTH[i] && 
 				month <= PESEL_MONTH[i] + MONTHS) {
 			month_interval_num = i;
@@ -242,14 +229,16 @@ int month_from_pesel(uint month) {
 		}
 	}
 
-	if (month_interval_num == -1)
+	if (month_interval_num == -1) {
 		set_pesel_error(EMONTH_RANGE);
+		return EMONTH_RANGE;
+	}
 
 	return month_interval_num;
 }
 
 PESEL_s date_to_pesel(PESEL_bdate_s date) {
-	if (check_date(date.year, date.month, date.day)) {
+	if (check_bdate(date)) {
 		return default_PESEL_s;
 	}
 
@@ -302,7 +291,7 @@ char* pesel_to_string(PESEL_s pesel_number) {
 	if (apesel == NULL) {
 		set_pesel_error(EALLOC);
 		return NULL;
-	}
+	} 
 
 	sprintf(&apesel[0], "%02u", pesel_number.year);
 	sprintf(&apesel[2], "%02u", pesel_number.month);
@@ -370,8 +359,7 @@ const uint random_pesel_ordinals(Gender_t g) {
 	static const char gender_numbers[2][5] = {
 		{0, 2, 4, 6, 8}, {1, 3, 5, 7, 9}
 	};
-	size_t gindex = (g == FEMALE) ? 0 : 1;
-
+	
 	uint ordinals = 0;
 	uint power = pow(10, 3);
 	init_random_generator();
@@ -380,6 +368,8 @@ const uint random_pesel_ordinals(Gender_t g) {
 		ordinals += (random_uint() % 10) * power;
 		power /= 10;
 	}
+
+	size_t gindex = (g == FEMALE) ? 0 : 1;
 	ordinals += gender_numbers[gindex][random_uint() % 5] * power;
 
 	return ordinals;
@@ -388,7 +378,6 @@ const uint random_pesel_ordinals(Gender_t g) {
 const uint pesel_control_number(PESEL_s pesel_number) {
 	char* pesel_string = pesel_to_string(pesel_number);
 	if (pesel_string == NULL) {
-		set_pesel_error(EALLOC);
 		return 0;
 	}
 
@@ -397,7 +386,7 @@ const uint pesel_control_number(PESEL_s pesel_number) {
 		sum += (to_digit(pesel_string[i]) * PESEL_wages[i]) % 10;
 	}
 
-	return 10 - (sum % 10);
+	return (10 - (sum % 10)) % 10;
 }
 
 
@@ -417,31 +406,27 @@ PESEL_s generate_pesel(PESEL_data_s pesel_data) {
 }
 
 PESEL_s generate_pesel_with_ordinals(PESEL_data_s pesel_data, uint ordinals) {
-	if (check_pesel_data(pesel_data))
-		return default_PESEL_s;
-
 	if (check_ordinals_gender(ordinals, pesel_data.gender))
 		return default_PESEL_s;
 
-	PESEL_s pesel_number;
-	pesel_number.year = cut_year(pesel_data.birth_date.year);
-	pesel_number.month = month_to_pesel(pesel_data.birth_date.year, 
-		pesel_data.birth_date.month);
-	pesel_number.day = pesel_data.birth_date.day;
+	PESEL_s pesel_number = generate_pesel(pesel_data);
+	if (!memcmp(&pesel_number, &default_PESEL_s, sizeof (PESEL_s))) {
+		return default_PESEL_s;
+	}
+
+	// only ordinals changes so the control number too
 	pesel_number.ordinals = ordinals;
 	pesel_number.control = pesel_control_number(pesel_number);
 
 	return pesel_number;
 }
 
-
-enum {ORDINALS_SIZE = 5000};
 static uint ordinals_table[ORDINALS_SIZE];
 static size_t ordinals_table_size = 0;
 
 static int push_ordinals(uint number) {
 	if (ordinals_table_size < ORDINALS_SIZE) {
-		ordinals_table[ordinals_table_size - 1] = number;
+		ordinals_table[ordinals_table_size] = number;
 		ordinals_table_size++;
 		return NOERROR;
 	} else {
@@ -455,6 +440,7 @@ static void clear_ordinals(void) {
 }
 
 static uint rec_ordinal = 0;
+
 static void rec_ordinals_even(uint deep) {
 	if (deep > 3) {
 		push_ordinals(rec_ordinal);
@@ -509,7 +495,7 @@ PESEL_s* generate_all_pesels(PESEL_data_s pesel_data) {
 		rec_ordinals_uneven(0);
 	}
 
-	PESEL_s* pesels_table = calloc(sizeof(PESEL_s), ORDINALS_SIZE);
+	PESEL_s* pesels_table = calloc(ORDINALS_SIZE, sizeof(PESEL_s));
 	if (pesels_table == NULL) {
 		set_pesel_error(EALLOC);
 		return NULL;
