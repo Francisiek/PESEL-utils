@@ -48,6 +48,27 @@ static uint random_uint(void) {
 	return (uint)rand();
 }
 
+bool is_default_pesel_s(PESEL_s pesel_number) {
+	if (!memcmp(&pesel_number, &default_PESEL_s, sizeof (PESEL_s))) {
+		return true;
+	}
+	return false;
+}
+
+int is_default_pesel_data_s(PESEL_data_s pesel_data) {
+	if (!memcmp(&pesel_data, &default_PESEL_data_s, sizeof (PESEL_data_s))) {
+		return true;
+	}
+	return false;
+}
+
+int is_default_pesel_bdate_s(PESEL_bdate_s pesel_date) {
+	if (!memcmp(&pesel_date, &default_PESEL_bdate_s, sizeof (PESEL_bdate_s))) {
+		return true;
+	}
+	return false;
+}
+
 bool is_leap_year(uint year) {
 	if (year % 4 != 0)
 		return false;
@@ -352,6 +373,41 @@ PESEL_s pesel_from_string(char* pesel_string) {
 	return pesel_number;
 }
 
+PESEL_bdate_s date_from_string(const char* datestr) {
+	if (date_from_pesel == NULL) {
+		set_pesel_error(EARGUMENT);
+		return default_PESEL_bdate_s;
+	}
+
+	size_t date_len = strlen(datestr);
+	if (date_len < 4 + 1 + 1 + 2) {
+		set_pesel_error(EARGUMENT);
+		return default_PESEL_bdate_s;
+	}
+
+	size_t j = 0;
+	uint date_nums[3];
+	for (int i = 0; i < 3; i++) {
+		size_t digits = 0;
+		for (; datestr[j] != ',' && datestr[j] != '\0'; j++, digits++) {
+			if (!isdigit(datestr[j])) {
+				set_pesel_error(ENOT_DIGIT);
+				return default_PESEL_bdate_s;
+			}
+		}
+		
+		date_nums[i] = (digits > 0) ? atoi(&datestr[j - digits]) : 0;
+		j++;
+	}
+
+	PESEL_bdate_s date;
+	date.year = date_nums[0];
+	date.month = date_nums[1];
+	date.day = date_nums[2];
+
+	return date;
+}
+
 const uint random_pesel_ordinals(Gender_t g) {
 	if (check_gender(g))
 		return 0;
@@ -410,7 +466,7 @@ PESEL_s generate_pesel_with_ordinals(PESEL_data_s pesel_data, uint ordinals) {
 		return default_PESEL_s;
 
 	PESEL_s pesel_number = generate_pesel(pesel_data);
-	if (!memcmp(&pesel_number, &default_PESEL_s, sizeof (PESEL_s))) {
+	if (is_default_pesel_s(pesel_number)) {
 		return default_PESEL_s;
 	}
 

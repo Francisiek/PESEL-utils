@@ -66,6 +66,12 @@ extern const uint const PESEL_wages[PESEL_length - 1];
 // Prints error message to stderr with and exits with exit(exit code)
 void printe(int exit_code, char* format, ...);
 
+bool is_default_pesel_s(PESEL_s pesel_number);
+
+int is_default_pesel_data_s(PESEL_data_s pesel_data);
+
+int is_default_pesel_bdate_s(PESEL_bdate_s pesel_date);
+
 // Checks if a 'year' is leap. Returns 0-false or 1-true
 bool is_leap_year(uint year);
 
@@ -114,17 +120,13 @@ PESEL_bdate_s date_from_pesel(PESEL_s pesel_number);
 // Fills PESEL_bdate_s structure with given date.
 PESEL_bdate_s make_pesel_bdate(uint year, uint month, uint day);
 
-PESEL_data_s make_pesel_data(PESEL_bdate_s bdate, Gender_t gender);
-
-char* pesel_to_string(PESEL_s pesel_number);
-
-PESEL_s pesel_from_string(char* pesel_string);
-
 // Returns 'pesel_number' as null-terminated string.
 char* pesel_to_string(PESEL_s pesel_number);
 
 // Converts 'pesel_string' to PESEL_s structure.
 PESEL_s pesel_from_string(char* pesel_string);
+
+PESEL_bdate_s date_from_string(const char* datestr);
 
 // Generates a random 4-digit PESEL ordinal numbers.
 const uint random_pesel_ordinals(Gender_t g);
