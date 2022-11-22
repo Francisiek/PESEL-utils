@@ -1,0 +1,4 @@
+*.o
+pesel-utils
+pesel-tool
+obj/*

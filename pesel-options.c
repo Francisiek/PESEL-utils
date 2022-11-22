@@ -54,6 +54,7 @@ int check_pesel_arg(const char* peselstr) {
 	PESEL_s pesel_number = pesel_from_string(peselstr);
 	if (is_default_pesel_s(pesel_number))
 		return 1;
+	return 0;
 }
 
 int check_date_arg(const char* datestr) {
@@ -61,6 +62,7 @@ int check_date_arg(const char* datestr) {
 	if (is_default_pesel_bdate_s(date)) {
 		return 1;
 	}
+	return 0;
 }
 
 int check_ordinals_arg(const char* ordinalsstr) {
@@ -68,6 +70,7 @@ int check_ordinals_arg(const char* ordinalsstr) {
 	uint ordinals = strtol(ordinalsstr, &invalid_ptr, 10);
 	if (invalid_ptr != NULL)
 		return 1;
+	return 0;
 }
 
 int check_gender_arg(const char* gender) {
@@ -76,3 +79,4 @@ int check_gender_arg(const char* gender) {
 	else
 		return 0;
 }
+

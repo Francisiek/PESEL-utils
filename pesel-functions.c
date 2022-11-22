@@ -84,8 +84,51 @@ uint cut_year(uint year) {
 	return year % 100;
 }
 
-uint to_digit(char c) {
+int to_digit(char c) {
 	return c - '0';
+}
+
+char* itos(int n) {
+	int sign = (n < 0) ? 1 : 0;
+	n = abs(n);
+
+	size_t digits_counter = 0;
+	int n_copy = n;
+	while (n_copy > 0) {
+		digits_counter++;
+		n_copy /= 10;
+	}
+	
+	char* nstr = calloc(digits_counter + 1 + sign, sizeof(char));
+
+	if (nstr == NULL)
+		return NULL;
+
+	for (int i = digits_counter - 1 + sign; i >= sign; i--) {
+		nstr[i] = n % 10;
+		n /= 10;
+	}
+
+	nstr[digits_counter + sign] = '\0';
+	if (sign)
+		nstr[0] = '-';
+	
+	return nstr;
+}
+
+size_t digits_equity(int number) {
+	number = abs(number);
+
+	size_t digits_counter = 0;
+	if (number % 10 == 0)
+		digits_counter++;
+
+	while (number > 0) {
+		number /= 10;
+		digits_counter++;
+	}
+
+	return digits_counter;
 }
 
 int check_pesel_month(uint month) {
@@ -209,6 +252,15 @@ int check_ordinals(uint ordinals) {
 	}
 
 	return NOERROR;
+}
+
+int gender_from_string(const char* genderstr) {
+	if (!(tolower(*genderstr) == 'f'))
+		return FEMALE;
+	else if (tolower(*genderstr) == 'm')
+		return MALE;
+	else
+		return -1;
 }
 
 int validate_pesel(PESEL_s pesel_number) {
@@ -374,11 +426,6 @@ PESEL_s pesel_from_string(char* pesel_string) {
 }
 
 PESEL_bdate_s date_from_string(const char* datestr) {
-	if (date_from_pesel == NULL) {
-		set_pesel_error(EARGUMENT);
-		return default_PESEL_bdate_s;
-	}
-
 	size_t date_len = strlen(datestr);
 	if (date_len < 4 + 1 + 1 + 2) {
 		set_pesel_error(EARGUMENT);
@@ -408,6 +455,30 @@ PESEL_bdate_s date_from_string(const char* datestr) {
 	return date;
 }
 
+char* date_to_string(PESEL_bdate_s date) {
+	uint year, month, day;
+	year = date.year;
+	month = date.month;
+	day = date.day;
+
+	size_t year_digits, month_digits, day_digits;
+	year_digits = digits_equity(year);
+	month_digits = digits_equity(month);
+	day_digits = digits_equity(day);
+
+	char* datestr = calloc(year_digits + month_digits + 
+		day_digits + 3, sizeof(char));
+	
+	strcpy(&datestr[0], itos(year));
+	datestr[year_digits] = ',';
+	strcpy(&datestr[year_digits + 1], itos(month));
+	datestr[year_digits + month_digits + 1] = ',';
+	strcpy(&datestr[year_digits + month_digits + 2], itos(day));
+	datestr[year_digits + month_digits + day_digits + 2] = '\0';
+
+	return datestr;
+}
+
 const uint random_pesel_ordinals(Gender_t g) {
 	if (check_gender(g))
 		return 0;
@@ -430,6 +501,15 @@ const uint random_pesel_ordinals(Gender_t g) {
 
 	return ordinals;
 }
+
+int ordinals_from_string(const char* ordinalsstr) {
+	char* invalid_ptr = NULL;
+	uint ordinals = strtol(ordinalsstr, &invalid_ptr, 10);
+	if (invalid_ptr != NULL)
+		return -1;
+	return ordinals;
+}
+
 
 const uint pesel_control_number(PESEL_s pesel_number) {
 	char* pesel_string = pesel_to_string(pesel_number);

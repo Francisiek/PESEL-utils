@@ -77,7 +77,11 @@ bool is_leap_year(uint year);
 
 uint cut_year(uint year);
 
-uint to_digit(char c);
+int to_digit(char c);
+
+char* itos(int n);
+
+size_t digits_equity(int number);
 
 int check_pesel_month(uint month);
 
@@ -99,9 +103,11 @@ int check_ordinals_gender(uint ordinals, Gender_t gender);
 // Checks if ordinals are 4 digit number.
 int check_ordinals(uint ordinals);
 
-int validate_pesel(PESEL_s pesel_number);
-
 int check_pesel_data(PESEL_data_s pesel_data);
+
+int gender_from_string(const char* genderstr);
+
+int validate_pesel(PESEL_s pesel_number);
 
 // Converts normal month number to PESEL format, so the one with
 // aditional number indicating century
@@ -128,8 +134,14 @@ PESEL_s pesel_from_string(char* pesel_string);
 
 PESEL_bdate_s date_from_string(const char* datestr);
 
+char* date_to_string(PESEL_bdate_s date);
+
 // Generates a random 4-digit PESEL ordinal numbers.
 const uint random_pesel_ordinals(Gender_t g);
+
+int ordinals_from_string(const char* ordinalsstr);
+
+char* ordinals_to_string(uint ordinals);
 
 // Computes PESEL's control number from PESEL_s structure.
 const uint pesel_control_number(PESEL_s pesel_number);

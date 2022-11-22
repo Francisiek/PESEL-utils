@@ -68,9 +68,37 @@ int main(int argc, char* argv[]) {
 	} else 
 		printe(EXIT_FAILURE, "one -c or -g operator is needed\n");
 
+	PESEL_s pesel_number;
+	PESEL_bdate_s pesel_bdate;
+	Gender_t gender;
+	uint ordinals;
+
 	if (isoptset['p']) {
-		if ()
+		if (check_pesel_arg(pesel_arg))
+			printe(EXIT_FAILURE, "Invalid -p argument\n");
+		pesel_number = pesel_from_string(pesel_arg);	
 	}
+
+	if (isoptset['d']) {
+		if (check_date_arg(date_arg))
+			printe(EXIT_FAILURE, "Invalid -d argument\n");
+		pesel_bdate = date_from_string(date_arg);
+	}
+
+	if (isoptset['o']) {
+		if (check_ordinals_arg(ordinals_arg))
+			printe(EXIT_FAILURE, "Invalid -o argument\n");
+		ordinals = atoi(ordinals_arg);
+	}
+
+	if (isoptset['s']) {
+		if (check_gender_arg(gender_arg))
+			printe(EXIT_FAILURE, "Invalid -s argument\n");
+		gender = gender_from_string(gender_arg);
+	}
+
+	printf("pesel %s\n", pesel_to_string(pesel_number));
+	printf("date %s\n", date_to_string(pesel_bdate));
 
 	return EXIT_SUCCESS;
 }
