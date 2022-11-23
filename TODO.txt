@@ -1,0 +1,9 @@
+1. Czy lepiej wychodzić exit() czy return?
+2. Dodać pesel_error_messages.
+3. Usunąć domyślne konwertowanie argumentów programu do zmiennych, bo
+mają one bardzo domyślne nazwy.
+4. Wzmocnić w każdej wymagającej tego linijce, ochronę przed błędami.
+5. Zamienić funckję printe() na taką, która nie powoduje wyjścia z
+programu, tylko wyświetla błąd, a jej obencą rolę przejmie funkcja
+printex() - od print error & exit.
+

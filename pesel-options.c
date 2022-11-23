@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <ctype.h>
 
 #include "pesel-options.h"
@@ -67,16 +68,21 @@ int check_date_arg(const char* datestr) {
 
 int check_ordinals_arg(const char* ordinalsstr) {
 	char* invalid_ptr = NULL;
-	uint ordinals = strtol(ordinalsstr, &invalid_ptr, 10);
-	if (invalid_ptr != NULL)
+	strtol(ordinalsstr, &invalid_ptr, 10);
+	if ((!isdigit(*invalid_ptr) && *invalid_ptr != '\0') || errno == ERANGE)
 		return 1;
 	return 0;
 }
 
-int check_gender_arg(const char* gender) {
-	if (!(tolower(*gender) == 'f' || tolower(*gender) == 'm'))
+int check_gender_arg(const char* genderstr) {
+	size_t gender_len = strlen(genderstr);
+	if (gender_len < 1)
 		return 1;
-	else
-		return 0;
+	for (size_t i = 0; i < gender_len; i++) {
+		if (!isalpha(genderstr[i]))
+			return 1;
+	}
+
+	return 0;
 }
 

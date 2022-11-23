@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <ctype.h>
 #include <math.h>
+#include <errno.h>
 
 int pesel_error;
 void set_pesel_error(int code) {
@@ -87,7 +88,7 @@ uint cut_year(uint year) {
 int to_digit(char c) {
 	return c - '0';
 }
-
+/*
 char* itos(int n) {
 	int sign = (n < 0) ? 1 : 0;
 	n = abs(n);
@@ -115,7 +116,7 @@ char* itos(int n) {
 	
 	return nstr;
 }
-
+*/
 size_t digits_equity(int number) {
 	number = abs(number);
 
@@ -255,12 +256,48 @@ int check_ordinals(uint ordinals) {
 }
 
 int gender_from_string(const char* genderstr) {
-	if (!(tolower(*genderstr) == 'f'))
-		return FEMALE;
-	else if (tolower(*genderstr) == 'm')
+	size_t gender_len = strlen(genderstr);
+
+	if (gender_len < 1)
+		return -1;
+	else if (gender_len == 1) {
+		if (tolower(*genderstr) == 'f')
+			return FEMALE;
+		else if (tolower(*genderstr) == 'm')
+			return MALE;
+		else
+			return -1;
+	}
+
+	char* gender_buffer = calloc(gender_len + 1, sizeof(char));
+	if (gender_buffer == NULL) {
+		set_pesel_error(EALLOC);
+		return -1;
+	}
+	gender_buffer[gender_len] = '\0';
+
+	for (size_t i = 0; i < gender_len; i++) {
+		gender_buffer[i] = tolower(genderstr[i]);
+	}
+	
+	if (!strcmp(gender_buffer, "male"))
 		return MALE;
+	else if (!strcmp(gender_buffer, "female"))
+		return FEMALE;
 	else
 		return -1;
+	
+}
+
+Gender_t gender_from_pesel(PESEL_s pesel_number) {
+	if (pesel_number.ordinals % 2 == FEMALE)
+		return FEMALE;
+	else if (pesel_number.ordinals % 2 == MALE) // if don't needed here
+		return MALE;
+}
+
+Gender_t gender_from_ordinals(uint ordinals) {
+	return ordinals % 2;
 }
 
 int validate_pesel(PESEL_s pesel_number) {
@@ -427,7 +464,7 @@ PESEL_s pesel_from_string(char* pesel_string) {
 
 PESEL_bdate_s date_from_string(const char* datestr) {
 	size_t date_len = strlen(datestr);
-	if (date_len < 4 + 1 + 1 + 2) {
+	if (date_len < 4 + 1 + 1 + 2 || date_len > 4 + 2 + 2 + 2) {
 		set_pesel_error(EARGUMENT);
 		return default_PESEL_bdate_s;
 	}
@@ -460,21 +497,17 @@ char* date_to_string(PESEL_bdate_s date) {
 	year = date.year;
 	month = date.month;
 	day = date.day;
-
-	size_t year_digits, month_digits, day_digits;
-	year_digits = digits_equity(year);
-	month_digits = digits_equity(month);
-	day_digits = digits_equity(day);
-
-	char* datestr = calloc(year_digits + month_digits + 
-		day_digits + 3, sizeof(char));
 	
-	strcpy(&datestr[0], itos(year));
-	datestr[year_digits] = ',';
-	strcpy(&datestr[year_digits + 1], itos(month));
-	datestr[year_digits + month_digits + 1] = ',';
-	strcpy(&datestr[year_digits + month_digits + 2], itos(day));
-	datestr[year_digits + month_digits + day_digits + 2] = '\0';
+	char* datestr = calloc(64, sizeof(char));
+	if (datestr == NULL) {
+		set_pesel_error(EALLOC);
+		return NULL;
+	}
+	
+	if (sprintf(datestr, "%u,%u,%u", year, month, day) < 1) {
+		set_pesel_error(EARGUMENT);
+		return NULL;
+	}
 
 	return datestr;
 }

@@ -19,11 +19,12 @@ enum PESEL_ERRORS {
 	EPESEL_LENGTH,
 	EVAL_PESEL,
 	ENOT_DIGIT,
-	EOVERFLOW,
 	EARGUMENT,
 };
 
 extern int pesel_error;
+
+//extern const char* pesel_error_msg[];
 
 enum { PESEL_date_length = 6 };
 enum { PESEL_ordinals_length = 4};
@@ -106,6 +107,10 @@ int check_ordinals(uint ordinals);
 int check_pesel_data(PESEL_data_s pesel_data);
 
 int gender_from_string(const char* genderstr);
+
+Gender_t gender_from_pesel(PESEL_s pesel_number);
+
+Gender_t gender_from_ordinals(uint ordinals);
 
 int validate_pesel(PESEL_s pesel_number);
 
