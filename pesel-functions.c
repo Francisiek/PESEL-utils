@@ -9,13 +9,82 @@
 #include <math.h>
 #include <errno.h>
 
-int pesel_error;
-void set_pesel_error(int code) {
-	pesel_error = code;
+int printe(char* format, ...) {
+	va_list list;
+	va_start(list, format);
+	int s = vfprintf(stderr, format, list);
+	va_end(list);
+	return s;
 }
 
-static int (*random_generator)() = rand;
-static int (*random_generator_initializer)() = srand;
+void printex(int exit_code, char* format, ...) {
+	va_list list;
+	va_start(list, format);
+	vfprintf(stderr, format, list);
+	va_end(list);
+	exit(exit_code);
+}
+
+static int _pesel_error = NOERROR;
+int _pesel_error_value(void) {
+	return _pesel_error;
+}
+
+static void set_pesel_error(int code) {
+	_pesel_error = code;
+}
+
+/*
+enum PESEL_ERRORS {
+	// NOERROR should always be set to zero
+	NOERROR = 0,
+	EALLOC = 5,
+	EYEAR_RANGE,
+	EMONTH_RANGE,
+	EDAY_RANGE,
+	EMONTH_DAY,
+	EGENDER,
+	EORDINALS,
+	ECONTROL,
+	EPESEL_LENGTH,
+	EVAL_PESEL,
+	ENOT_DIGIT,
+	EARGUMENT,
+};
+*/
+
+#define _pesel_error_msg_size 256
+const char* pesel_error_msg_table[_pesel_error_msg_size] = {
+	[NOERROR] = "No error",
+	[EALLOC] = "Can't allocate memory",
+	[EYEAR_RANGE] = "Year doesn't fit in the range",
+	[EMONTH_RANGE] = "Month doesn't fit in the range",
+	[EDAY_RANGE] = "Day doesn't fit in the range",
+	[EMONTH_DAY] = "Day doesn't fit to the month",
+	[EGENDER] = "No such gender",
+	[EORDINALS] = "Wrong ordinals number",
+	[ECONTROL] = "Wrong control number",
+	[EPESEL_LENGTH] = "Wrong pesel's length",
+	[EVAL_PESEL] = "Incorrect PESEL number",
+	[ENOT_DIGIT] = "Digit not supposed",
+	[EARGUMENT] = "Bad function argument"
+};
+
+char* pesel_error_msg(int code) {
+	if (code >= _pesel_error_msg_size)
+		return NULL;
+
+	return pesel_error_msg_table[code];
+}
+
+int print_pesel_error(char* head) {
+	return printe("%s: %s\n", head, pesel_error_msg(pesel_error));
+}
+
+void printex_pesel_error(int exit_code, char* head) {
+	print_pesel_error(head);
+	exit(exit_code);
+}
 
 enum {MONTHS = 12, MAX_YEAR = 99, DINTERVALS = 5};
 
@@ -33,13 +102,6 @@ PESEL_bdate_s default_PESEL_bdate_s = {};
 PESEL_data_s default_PESEL_data_s = {};
 PESEL_s default_PESEL_s = {};
 
-void printe(int exit_code, char* format, ...) {
-	va_list list;
-	va_start(list, format);
-	vfprintf(stderr, format, list);
-	va_end(list);
-	exit(exit_code);
-}
 
 static void init_random_generator(void) {
 	return srand(time(NULL) * clock());
@@ -88,35 +150,7 @@ uint cut_year(uint year) {
 int to_digit(char c) {
 	return c - '0';
 }
-/*
-char* itos(int n) {
-	int sign = (n < 0) ? 1 : 0;
-	n = abs(n);
 
-	size_t digits_counter = 0;
-	int n_copy = n;
-	while (n_copy > 0) {
-		digits_counter++;
-		n_copy /= 10;
-	}
-	
-	char* nstr = calloc(digits_counter + 1 + sign, sizeof(char));
-
-	if (nstr == NULL)
-		return NULL;
-
-	for (int i = digits_counter - 1 + sign; i >= sign; i--) {
-		nstr[i] = n % 10;
-		n /= 10;
-	}
-
-	nstr[digits_counter + sign] = '\0';
-	if (sign)
-		nstr[0] = '-';
-	
-	return nstr;
-}
-*/
 size_t digits_equity(int number) {
 	number = abs(number);
 

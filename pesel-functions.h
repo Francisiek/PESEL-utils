@@ -22,9 +22,9 @@ enum PESEL_ERRORS {
 	EARGUMENT,
 };
 
-extern int pesel_error;
-
-//extern const char* pesel_error_msg[];
+int _pesel_error_value(void);
+#define pesel_error _pesel_error_value()
+extern char* pesel_error_msg(int code);
 
 enum { PESEL_date_length = 6 };
 enum { PESEL_ordinals_length = 4};
@@ -65,7 +65,15 @@ typedef struct PESEL_s {
 extern const uint const PESEL_wages[PESEL_length - 1];
 
 // Prints error message to stderr with and exits with exit(exit code)
-void printe(int exit_code, char* format, ...);
+void printex(int exit_code, char* format, ...);
+
+int printe(char* format, ...);
+
+char* pesel_error_msg(int code);
+
+int print_pesel_error(char* head);
+
+void printex_pesel_error(int exit_code, char* head);
 
 bool is_default_pesel_s(PESEL_s pesel_number);
 

@@ -34,7 +34,7 @@ const char* optstring = "-:cgp:d:o:s:a";
 int areotheropt(const char* optstr) {
 	size_t optstr_len = strlen(optstr);
 
-	for (size_t i = 0; i < optset_size; i++) {
+	for (size_t i = 1; i < optset_size; i++) {
 		if (isoptset[i]) {
 			bool one_of_opt = false;
 			for (size_t j = 0; j < optstr_len; j++) {

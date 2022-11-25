@@ -9,21 +9,22 @@
 //#define DEBUG_MODE 1
 
 int main(int argc, char* argv[]) {
+	char* program_name = argv[0];
 	int c;
 	while ((c = getopt_long(argc, argv, optstring,
 			long_options, 0)) != -1) {
 		if (c == '?') {
-			printe(EXIT_FAILURE, "Wrong option %s\n", argv[optind - 1]);
+			printex(EXIT_FAILURE, "Wrong option %s\n", argv[optind - 1]);
 		} else if (c == ':') {
-			printe(EXIT_FAILURE, "Missing option argument %s\n", argv[optind - 1]);
+			printex(EXIT_FAILURE, "Missing option argument %s\n", argv[optind - 1]);
 		} else if (c == 1) {
-			printe(EXIT_FAILURE, "Unnecessary argument %s\n", argv[optind - 1]);
+			printex(EXIT_FAILURE, "Unnecessary argument %s\n", argv[optind - 1]);
 		}
 		
 		if (isoptset[c] == false)
 			isoptset[c] = true;
 		else
-			printe(EXIT_FAILURE, "Option -%c set two times\n", c);
+			printex(EXIT_FAILURE, "Option -%c set two times\n", c);
 
 		if (c == 'p')
 			pesel_arg = optarg;
@@ -51,26 +52,26 @@ int main(int argc, char* argv[]) {
 	if (isoptset['c'] ^ isoptset['g']) {
 		if (isoptset['c']) {
 			if (!(isoptset['p'] || isoptset['o'] || isoptset['d'] || isoptset['s']))
-				printe(EXIT_FAILURE, "One of -[pods] needed with -c\n");
+				printex(EXIT_FAILURE, "One of -[pods] needed with -c\n");
 
 			int opt;
 			if (opt = areotheropt("cpods")) {
-				printe(EXIT_FAILURE, "Wrong option -%c set with -c\n", opt);
+				printex(EXIT_FAILURE, "Wrong option -%c set with -c\n", opt);
 			}
 		} else if (isoptset['g']) { // 'if' is unnecessary here
 			if (!(isoptset['d'] && (isoptset['s'] || isoptset['o'])))
-				printe(EXIT_FAILURE, "-d and (-s or -o) needed with -g\n");
+				printex(EXIT_FAILURE, "-d and (-s or -o) needed with -g\n");
 			
 			if (isoptset['o'] && isoptset['a']) 
-				printe(EXIT_FAILURE, "Options -o and -a can't be set together\n");
+				printex(EXIT_FAILURE, "Options -o and -a can't be set together\n");
 
 			int opt;
 			if (opt = areotheropt("gdsoa")) {
-				printe(EXIT_FAILURE, "Wrong option -%c set with -g\n", opt);
+				printex(EXIT_FAILURE, "Wrong option -%c set with -g\n", opt);
 			}
 		}
 	} else 
-		printe(EXIT_FAILURE, "one -c or -g operator is needed\n");
+		printex(EXIT_FAILURE, "one -c or -g operator is needed\n");
 
 	// check if option format is valid
 	PESEL_s pesel_number;
@@ -80,25 +81,25 @@ int main(int argc, char* argv[]) {
 
 	if (isoptset['p']) {
 		if (check_pesel_arg(pesel_arg))
-			printe(EXIT_FAILURE, "Invalid -p argument\n");
+			printex_pesel_error(EXIT_FAILURE, "Invalid -p argument");
 		pesel_number = pesel_from_string(pesel_arg);	
 	}
 
 	if (isoptset['d']) {
 		if (check_date_arg(date_arg))
-			printe(EXIT_FAILURE, "Invalid -d argument\n");
+			printex_pesel_error(EXIT_FAILURE, "Invalid -d argument");
 		pesel_bdate = date_from_string(date_arg);
 	}
 
 	if (isoptset['o']) {
 		if (check_ordinals_arg(ordinals_arg))
-			printe(EXIT_FAILURE, "Invalid -o argument\n");
+			printex_pesel_error(EXIT_FAILURE, "Invalid -o argument");
 		ordinals = atoi(ordinals_arg);
 	}
 
 	if (isoptset['s']) {
 		if (check_gender_arg(gender_arg))
-			printe(EXIT_FAILURE, "Invalid -s argument\n");
+			printex_pesel_error(EXIT_FAILURE, "Invalid -s argument");
 		gender = gender_from_string(gender_arg);
 	}
 
@@ -120,8 +121,7 @@ int main(int argc, char* argv[]) {
 					Gender_t gtmp = gender_from_pesel(pesel_number);
 					printf("Gender: %s\n", (gtmp == FEMALE) ? "female" : "male");
 				} else {
-					printf("Invalid pesel %s\n", pesel_to_string(pesel_number));
-					// error message
+					print_pesel_error("Invalid pesel");
 				}
 				printf("\n");
 			}
@@ -130,8 +130,7 @@ int main(int argc, char* argv[]) {
 				if (check_ordinals(ordinals) == NOERROR) {
 					printf("Ordinals %u are good\n", ordinals);
 				} else {
-					printf("Invalid ordinals %u\n", ordinals);
-					// error message
+					print_pesel_error("Invalid ordinals");
 				}
 				printf("\n");
 			}
@@ -140,8 +139,7 @@ int main(int argc, char* argv[]) {
 				if (check_bdate(pesel_bdate) == NOERROR) {
 					printf("Date %s is good\n", date_to_string(pesel_bdate));
 				} else {
-					printf("Invalid pesel date %s\n", date_to_string(pesel_bdate));
-					// error message
+					print_pesel_error("Invalid pesel date");
 				}
 				printf("\n");
 			}
@@ -150,32 +148,27 @@ int main(int argc, char* argv[]) {
 				if (check_gender(gender) == NOERROR) {
 					printf("Gender %s is good\n", gender_arg);
 				} else {
-					printf("Invalid %s gender\n", gender_arg);
+					print_pesel_error("Invalid gender");
 				}
 				printf("\n");
 			}
 			
 		} else if (isoptset['g']) { // 'if' is unnecessary here
 			if (check_bdate(pesel_bdate) != NOERROR) {
-				printf("Invalid pesel date %s\n", date_to_string(pesel_bdate));
-				return EXIT_FAILURE;
-				// error message
+				printex_pesel_error(EXIT_FAILURE, "Invalid pesel date");
 			}
 			
 			if (isoptset['s'] && check_gender(gender) != NOERROR) {
-				printf("Invalid %s gender\n", gender_arg);
-				return EXIT_FAILURE;
+				printex_pesel_error(EXIT_FAILURE, "Invalid gender");
 			}
 			
 			if (isoptset['o']) {
 				if (check_ordinals(ordinals) != NOERROR) {
-					printf("Invalid ordinals %u\n", ordinals);
-					return EXIT_FAILURE;
+					printex_pesel_error(EXIT_FAILURE, "");
 				}
 
 				if (isoptset['s'] && check_ordinals_gender(ordinals, gender) != NOERROR) {
-					printf("Invalid ordinals %u for %s gender \n", ordinals, gender_arg);
-					return EXIT_FAILURE;
+					printex_pesel_error(EXIT_FAILURE, "Invalid ordinals for this gender");
 				}
 			}
 			
@@ -187,9 +180,7 @@ int main(int argc, char* argv[]) {
 			if (isoptset['a']) {
 				PESEL_s* all_pesels = generate_all_pesels(pdata);
 				if (all_pesels == NULL) {
-					printf("Could not generate all pesels\n");
-					return EXIT_FAILURE;
-					// error messages
+					printex_pesel_error(EXIT_FAILURE, "Could not generate all pesels");
 				}
 
 				for (size_t i = 0; i < ORDINALS_SIZE; i++) {
@@ -200,16 +191,14 @@ int main(int argc, char* argv[]) {
 
 				PESEL_s pn = generate_pesel_with_ordinals(pdata, ordinals);
 				if (is_default_pesel_s(pn)) {
-					printf("Could not generate pesel\n");
-					return EXIT_FAILURE;
+					printex_pesel_error(EXIT_FAILURE, "Could not generate pesel");
 				}
 
 				printf("Pesel %s\n", pesel_to_string(pn));
 			} else {
 				PESEL_s pn = generate_pesel(pdata);
 				if (is_default_pesel_s(pn)) {
-					printf("Could not generate pesel\n");
-					return EXIT_FAILURE;
+					printex_pesel_error(EXIT_FAILURE, "Could not generate pesel");
 				}
 
 				printf("Pesel %s\n", pesel_to_string(pn));
