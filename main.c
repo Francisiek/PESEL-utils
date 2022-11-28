@@ -27,13 +27,13 @@ int main(int argc, char* argv[]) {
 			printex(EXIT_FAILURE, "Option -%c set two times\n", c);
 
 		if (c == 'p')
-			pesel_arg = optarg;
+			pesel_arg = optind;
 		else if (c == 'd')
-			date_arg = optarg;
+			date_arg = optind;
 		else if (c == 'o')
-			ordinals_arg = optarg;
+			ordinals_arg = optind;
 		else if (c == 's')
-			gender_arg = optarg;
+			gender_arg = optind;
 	}
 
 	#ifdef DEBUG_MODE
@@ -73,35 +73,38 @@ int main(int argc, char* argv[]) {
 	} else 
 		printex(EXIT_FAILURE, "one -c or -g operator is needed\n");
 
+	/*
 	// check if option format is valid
 	PESEL_s pesel_number;
 	PESEL_bdate_s pesel_bdate;
 	Gender_t gender;
 	uint ordinals;
+	*/
 
 	if (isoptset['p']) {
 		if (check_pesel_arg(pesel_arg))
 			printex_pesel_error(EXIT_FAILURE, "Invalid -p argument");
-		pesel_number = pesel_from_string(pesel_arg);	
+		// pesel_number = pesel_from_string(pesel_arg);	
 	}
 
 	if (isoptset['d']) {
 		if (check_date_arg(date_arg))
 			printex_pesel_error(EXIT_FAILURE, "Invalid -d argument");
-		pesel_bdate = date_from_string(date_arg);
+		// pesel_bdate = date_from_string(date_arg);
 	}
 
 	if (isoptset['o']) {
 		if (check_ordinals_arg(ordinals_arg))
 			printex_pesel_error(EXIT_FAILURE, "Invalid -o argument");
-		ordinals = atoi(ordinals_arg);
+		// ordinals = atoi(ordinals_arg);
 	}
 
 	if (isoptset['s']) {
 		if (check_gender_arg(gender_arg))
 			printex_pesel_error(EXIT_FAILURE, "Invalid -s argument");
-		gender = gender_from_string(gender_arg);
+		// gender = gender_from_string(gender_arg);
 	}
+
 
 	#ifdef DEBUG_MODE
 	printf("pesel %s\n", pesel_to_string(pesel_number));
@@ -113,11 +116,17 @@ int main(int argc, char* argv[]) {
 	if (isoptset['c'] ^ isoptset['g']) {
 		if (isoptset['c']) {
 			if (isoptset['p']) {
+				PESEL_s pesel_number = pesel_from_string(argv[pesel_arg]);
+
 				if (validate_pesel(pesel_number) == NOERROR) {
-					printf("Pesel %s is good\n", pesel_to_string(pesel_number));
+					char* apesel = pesel_to_string(pesel_number);
+					printf("Pesel %s is good\n", apesel);
+					free(apesel);
+
 					char* peseldate = date_to_string(date_from_pesel(pesel_number));
 					printf("Date: %s\n", peseldate);
 					free(peseldate);
+					
 					Gender_t gtmp = gender_from_pesel(pesel_number);
 					printf("Gender: %s\n", (gtmp == FEMALE) ? "female" : "male");
 				} else {
@@ -127,6 +136,8 @@ int main(int argc, char* argv[]) {
 			}
 
 			if (isoptset['o']) {
+				uint ordinals = atoi(argv[ordinals_arg]);
+
 				if (check_ordinals(ordinals) == NOERROR) {
 					printf("Ordinals %u are good\n", ordinals);
 				} else {
@@ -136,8 +147,12 @@ int main(int argc, char* argv[]) {
 			}
 
 			if (isoptset['d']) {
+				PESEL_bdate_s pesel_bdate = date_from_string(argv[date_arg]);
+
 				if (check_bdate(pesel_bdate) == NOERROR) {
-					printf("Date %s is good\n", date_to_string(pesel_bdate));
+					char* adate = date_to_string(pesel_bdate);
+					printf("Date %s is good\n", adate);
+					free(adate);
 				} else {
 					print_pesel_error("Invalid pesel date");
 				}
@@ -145,6 +160,8 @@ int main(int argc, char* argv[]) {
 			}
 
 			if (isoptset['s']) {
+				Gender_t gender = gender_from_string(argv[gender_arg]);
+
 				if (check_gender(gender) == NOERROR) {
 					printf("Gender %s is good\n", gender_arg);
 				} else {
@@ -154,15 +171,24 @@ int main(int argc, char* argv[]) {
 			}
 			
 		} else if (isoptset['g']) { // 'if' is unnecessary here
+			PESEL_bdate_s pesel_bdate = date_from_string(argv[date_arg]);
+			uint ordinals;
+			Gender_t gender;
+
 			if (check_bdate(pesel_bdate) != NOERROR) {
 				printex_pesel_error(EXIT_FAILURE, "Invalid pesel date");
 			}
 			
-			if (isoptset['s'] && check_gender(gender) != NOERROR) {
-				printex_pesel_error(EXIT_FAILURE, "Invalid gender");
+			if (isoptset['s']) {
+				gender = gender_from_string(argv[gender_arg]);
+
+				if (check_gender(gender) != NOERROR) {
+					printex_pesel_error(EXIT_FAILURE, "Invalid gender");
 			}
 			
 			if (isoptset['o']) {
+				ordinals = atoi(argv[ordinals_arg]);
+
 				if (check_ordinals(ordinals) != NOERROR) {
 					printex_pesel_error(EXIT_FAILURE, "");
 				}
@@ -184,8 +210,12 @@ int main(int argc, char* argv[]) {
 				}
 
 				for (size_t i = 0; i < ORDINALS_SIZE; i++) {
-					printf("%d: %s\n", i + 1, pesel_to_string(all_pesels[i]));
+					char* apesel = pesel_to_string(all_pesels[i]);
+					printf("%d: %s\n", i + 1, apesel);
+					free(apesel);
 				}
+
+				free(all_pesels);
 			} else if (isoptset['o']) {
 				pdata.gender = gender_from_ordinals(ordinals);
 
@@ -194,14 +224,18 @@ int main(int argc, char* argv[]) {
 					printex_pesel_error(EXIT_FAILURE, "Could not generate pesel");
 				}
 
-				printf("Pesel %s\n", pesel_to_string(pn));
+				char* apesel = pesel_to_string(pn);
+				printf("Pesel %s\n", apesel);
+				free(apesel);
 			} else {
 				PESEL_s pn = generate_pesel(pdata);
 				if (is_default_pesel_s(pn)) {
 					printex_pesel_error(EXIT_FAILURE, "Could not generate pesel");
 				}
-
-				printf("Pesel %s\n", pesel_to_string(pn));
+				
+				char* apesel = pesel_to_string(pn);
+				printf("Pesel %s\n", apesel);
+				free(apesel);
 			}
 		}
 	}
