@@ -10,10 +10,10 @@
 #include "pesel-functions.h"
 
 bool isoptset[optset_size];
-char* pesel_arg;
-char* date_arg;
-char* ordinals_arg;
-char* gender_arg;
+size_t pesel_arg;
+size_t date_arg;
+size_t ordinals_arg;
+size_t gender_arg;
 
 struct option long_options[] = {
 	{"check", no_argument, NULL, 'c'},

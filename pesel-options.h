@@ -6,10 +6,10 @@ extern const char* optstring;
 
 #define optset_size 128
 extern bool isoptset[optset_size];
-extern char* pesel_arg;
-extern char* date_arg;
-extern char* ordinals_arg;
-extern char* gender_arg;
+extern size_t pesel_arg;
+extern size_t date_arg;
+extern size_t ordinals_arg;
+extern size_t gender_arg;
 
 // find if options other than in optstr are set in 'isoptset'
 int areotheropt(const char* optstr);
