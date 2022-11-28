@@ -27,13 +27,13 @@ int main(int argc, char* argv[]) {
 			printex(EXIT_FAILURE, "Option -%c set two times\n", c);
 
 		if (c == 'p')
-			pesel_arg = optind;
+			pesel_arg = optind - 1;
 		else if (c == 'd')
-			date_arg = optind;
+			date_arg = optind - 1;
 		else if (c == 'o')
-			ordinals_arg = optind;
+			ordinals_arg = optind - 1;
 		else if (c == 's')
-			gender_arg = optind;
+			gender_arg = optind - 1;
 	}
 
 	#ifdef DEBUG_MODE
@@ -82,25 +82,25 @@ int main(int argc, char* argv[]) {
 	*/
 
 	if (isoptset['p']) {
-		if (check_pesel_arg(pesel_arg))
+		if (check_pesel_arg(argv[pesel_arg]))
 			printex_pesel_error(EXIT_FAILURE, "Invalid -p argument");
 		// pesel_number = pesel_from_string(pesel_arg);	
 	}
 
 	if (isoptset['d']) {
-		if (check_date_arg(date_arg))
+		if (check_date_arg(argv[date_arg]))
 			printex_pesel_error(EXIT_FAILURE, "Invalid -d argument");
 		// pesel_bdate = date_from_string(date_arg);
 	}
 
 	if (isoptset['o']) {
-		if (check_ordinals_arg(ordinals_arg))
+		if (check_ordinals_arg(argv[ordinals_arg]))
 			printex_pesel_error(EXIT_FAILURE, "Invalid -o argument");
 		// ordinals = atoi(ordinals_arg);
 	}
 
 	if (isoptset['s']) {
-		if (check_gender_arg(gender_arg))
+		if (check_gender_arg(argv[gender_arg]))
 			printex_pesel_error(EXIT_FAILURE, "Invalid -s argument");
 		// gender = gender_from_string(gender_arg);
 	}
