@@ -9,3 +9,4 @@ printex() - od print error & exit.
 6. Poprawić komentarze funkcji
 7. Stworzyć -h/--help
 //8. free() każdy wskaźnik
+9. Ustandardować komunikaty wyjściowe i zwracane wartości do systemu.
