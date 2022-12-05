@@ -1,0 +1,26 @@
+"
+Usage: pesel-utils [options]
+A program for checking and generating PESEL numbers.
+
+OPTIONS
+-c --check [-[pods]] - checks given arguments.
+-g --generate [-[dso][-a]] - generates PESEL number based on given values.
+-c and -g can't be used together. 
+-d --date [YYYY,M[M],D[D]] - loads date into program.
+-s --gender [[f/m/female/male]] - loads gender into program.
+-o --ordinals [NNNN] - loads 4-digit number called 'ordinals' into program.
+-p --pesel [NNNNNNNNNNN] - loads 11-digit PESEL number into program.
+-a --all - used with option -g tells it to generate all possible PESEL numbers.
+
+EXIT VALUES
+0 - successfull termination
+
+EXAMPLES
+pesel-utils -g -d 1997,4,22 -s f
+: Generates PESEL for female born on 22 April 1997.
+
+pesel-utils -c -p 97042226664
+: Checks given PESEL.
+
+For more see man pesel-utils
+"

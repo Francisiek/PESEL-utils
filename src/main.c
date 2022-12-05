@@ -3,10 +3,10 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-#include "pesel-functions.h"
-#include "pesel-options.h"
+#include "../hdr/pesel-functions.h"
+#include "../hdr/pesel-options.h"
 
-//#define DEBUG_MODE 1
+// const char* help_message = #inlcude "../text/help_message.txt";
 
 int main(int argc, char* argv[]) {
 	char* program_name = argv[0];

@@ -6,8 +6,8 @@
 #include <errno.h>
 #include <ctype.h>
 
-#include "pesel-options.h"
-#include "pesel-functions.h"
+#include "../hdr/pesel-options.h"
+#include "../hdr/pesel-functions.h"
 
 bool isoptset[optset_size];
 size_t pesel_arg;

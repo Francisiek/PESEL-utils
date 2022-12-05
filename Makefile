@@ -1,18 +1,18 @@
 flags = -g -Wall -std=c17
 
-all: pesel-tool
+all: pesel-utils
 
-main.o: main.c pesel-functions.h pesel-options.h
-	gcc $(flags) -c main.c -o $@
+obj/main.o: src/main.c
+	gcc $(flags) -c $? -o $@
 
-pesel-functions.o: pesel-functions.c
-	gcc $(flags) -c pesel-functions.c -o $@ 
+obj/pesel-functions.o: src/pesel-functions.c
+	gcc $(flags) -c $? -o $@ 
 
-pesel-options.o: pesel-options.c
-	gcc $(flags) -c pesel-options.c -o $@
+obj/pesel-options.o: src/pesel-options.c
+	gcc $(flags) -c $? -o $@
 
-pesel-tool: main.o pesel-functions.o pesel-options.o
-	gcc $(flags) main.o pesel-functions.o pesel-options.o -o $@ -lm
+pesel-utils: obj/main.o obj/pesel-functions.o obj/pesel-options.o
+	gcc $(flags) $? -o $@ -lm
 
 install:
 
